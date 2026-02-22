@@ -1,0 +1,12 @@
+---
+description: Respect API and event contracts; idempotency keys and event envelope
+globs: "docs/04-api-contracts.md, docs/05-event-contracts.md, **/api/**/*, **/handlers/**/*, **/src/**/*"
+alwaysApply: false
+---
+
+# API and event contracts
+
+- **APIs**: Follow [docs/04-api-contracts.md](docs/04-api-contracts.md). Paths, methods, and auth (Cognito JWT) must match. Use **Idempotency-Key** header for POST /bookings and POST /payments/hold.
+- **Events**: Follow [docs/05-event-contracts.md](docs/05-event-contracts.md). Every event must include: eventId, eventType, eventVersion, correlationId, timestamp, producer, payload. Consumers must handle at-least-once delivery and deduplicate by eventId.
+- **Do**: Validate request/response shapes against the contracts; implement idempotency where specified; version event payloads (eventVersion).
+- **Don't**: Add APIs or events that contradict the docs without updating the contract docs first; omit idempotency keys for create-booking or create-hold.

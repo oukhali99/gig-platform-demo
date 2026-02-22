@@ -1,0 +1,12 @@
+---
+description: IaC only in stacks; naming and tagging consistent with docs and ADRs
+globs: "infra/**/*, cdk/**/*, **/stack*.ts, **/*.yaml, **/*.yml"
+alwaysApply: false
+---
+
+# Infrastructure
+
+- **Scope**: Infrastructure-as-Code (CDK, CloudFormation, SAM, etc.) only in infra/stacks. No business logic in IaC; keep resources and wiring.
+- **Naming and tagging**: Resource names and tags must be consistent with docs and [docs/adr/](docs/adr/). Reference ADRs for choices (e.g. EventBridge, Cognito, per-service DBs).
+- **Do**: Define APIs, event rules, queues, and DBs in IaC; use parameterized config (env, stage); document new resources in service catalog or ADR when relevant.
+- **Don't**: Put domain logic, validation, or service code inside stack definitions; create shared databases or resources that break per-service boundaries.

@@ -1,0 +1,12 @@
+---
+description: Project context — gig platform, decoupled AWS microservices, follow docs
+alwaysApply: true
+---
+
+# Gig platform context
+
+This project is a **gig platform**: people hire others for small jobs (e.g. landscaping, handyman). It is built as **decoupled AWS microservices**.
+
+- **Authority**: Follow `docs/` for boundaries, contracts, and decisions. Start from [docs/README.md](docs/README.md) and the numbered docs (01–08); use [docs/adr/](docs/adr/) for architecture decisions.
+- **Scope**: Bounded contexts include Identity, Jobs, Workers, Bookings, Payments, Notifications, Reviews. Do not introduce shared databases or skip event/API contracts.
+- **Planning reference**: Pre-build documentation plan (if present) describes the intended doc set and Cursor rules; align new work with it.

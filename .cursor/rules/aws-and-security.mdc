@@ -1,0 +1,12 @@
+---
+description: AWS and security — no secrets in code, API Gateway only, prefer managed services
+alwaysApply: true
+---
+
+# AWS and security
+
+- **Secrets**: No secrets in code or in docs. Use **AWS Secrets Manager** or **SSM Parameter Store** (SecureString). Resolve at runtime.
+- **API exposure**: Public APIs only via **API Gateway**. No direct exposure of Lambda URLs or ECS tasks. Databases only inside VPC.
+- **Managed services**: Prefer Lambda, EventBridge, Cognito, RDS/DynamoDB, S3. Use IAM for authorization; no long-lived keys in repo.
+- **Do**: Store config and secrets in Parameter Store/Secrets Manager; use Cognito for auth; encrypt at rest (RDS, DynamoDB, S3) and document in docs.
+- **Don't**: Hardcode API keys, passwords, or tokens; expose DB or internal services to the internet; commit .env files with secrets.

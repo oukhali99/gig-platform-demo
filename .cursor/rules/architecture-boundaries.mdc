@@ -1,0 +1,12 @@
+---
+description: Architecture boundaries — one DB per service, events, UUIDs, idempotent consumers
+alwaysApply: true
+---
+
+# Architecture boundaries
+
+- **One database per service**: No shared DB. Each service owns and stores only its own data. Cross-service data only via APIs or events.
+- **Events**: Publish domain events (e.g. JobCreated, BookingConfirmed) for integration. Consume events **idempotently** (use eventId to deduplicate).
+- **Identifiers**: Use **UUIDs** for jobId, bookingId, workerId, paymentId, userId (in app DB). Do not use auto-increment IDs that leak across services.
+- **Do**: Publish events after persisting state; include eventId, eventType, eventVersion, correlationId, timestamp, producer, payload.
+- **Don't**: Query another service's database; skip idempotency when handling events; use sequential IDs as public identifiers.
