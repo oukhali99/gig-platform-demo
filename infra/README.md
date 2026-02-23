@@ -13,11 +13,18 @@ Deploys: Cognito user pool, jobs Lambda + DynamoDB, identity Lambda, API Gateway
 From repo root:
 
 ```bash
-# Deploy (builds both Lambda packages, then terraform apply)
+# Deploy production (default: minimal logging)
 yarn deploy
 ```
 
-Or manually: `yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda`, then `cd infra && terraform init && terraform apply`. Run both Lambda builds before apply when service code changes.
+```bash
+# Deploy dev (increased Lambda logging: request/response and errors in CloudWatch)
+yarn deploy:dev
+```
+
+Dev sets `environment=dev` so both Lambdas log each request (method, path, requestId, correlationId/sub where relevant) and response statusCode. Use for debugging; switch back to `yarn deploy` for production.
+
+Or manually: `yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda`, then `cd infra && terraform init && terraform apply`. Add `-var=environment=dev` for dev logging.
 
 ## Outputs
 

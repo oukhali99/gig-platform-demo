@@ -9,6 +9,7 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
+    "@gig-platform/common": "link:../../common",
     "@aws-sdk/client-cognito-identity-provider": "^3.700.0"
   },
   "devDependencies": {

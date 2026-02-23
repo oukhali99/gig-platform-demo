@@ -13,5 +13,7 @@ rm -rf "$PACKAGE_DIR"
 mkdir -p "$PACKAGE_DIR"
 cp -r "$IDENTITY_ROOT/dist/"* "$PACKAGE_DIR/"
 cp "$IDENTITY_ROOT/package.json" "$PACKAGE_DIR/"
+# Resolve shared workspace package for Lambda (file path from build/package to repo root)
+sed -i 's|"@gig-platform/common": "link:../../common"|"@gig-platform/common": "file:../../../../../app/common"|' "$PACKAGE_DIR/package.json"
 cd "$PACKAGE_DIR" && yarn install --production
 echo "Built Lambda package at $PACKAGE_DIR"

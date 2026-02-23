@@ -1,0 +1,19 @@
+{
+  "name": "@gig-platform/common",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/logger.js",
+  "exports": {
+    ".": "./dist/logger.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -203,6 +203,7 @@ resource "aws_lambda_function" "jobs" {
     variables = {
       TABLE_NAME     = aws_dynamodb_table.jobs.name
       EVENT_BUS_NAME = "default"
+      ENVIRONMENT    = var.environment
     }
   }
 }
@@ -270,6 +271,7 @@ resource "aws_lambda_function" "identity" {
     variables = {
       USER_POOL_ID = aws_cognito_user_pool.main.id
       CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      ENVIRONMENT  = var.environment
     }
   }
 }

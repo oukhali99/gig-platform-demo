@@ -1,5 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { randomUUID } from 'crypto';
+import { devLog } from '@gig-platform/common';
 import * as repo from './repository.js';
 import * as events from './events.js';
 import type { CreateJobInput, UpdateJobInput, JobStatus } from './types.js';
@@ -89,12 +90,15 @@ async function handleCreateJob(event: APIGatewayProxyEventV2): Promise<APIGatewa
 
   const now = new Date().toISOString();
   const jobId = randomUUID();
+
   const sub = getSubFromEvent(event);
-  const clientId = sub ?? 'anonymous';
+  if (!sub) {
+    return json(401, { code: 'UNAUTHORIZED', message: 'Authentication required' });
+  }
 
   const job = {
     jobId,
-    clientId,
+    clientId: sub,
     title: validated.data.title,
     categoryId: validated.data.categoryId,
     location: validated.data.location,
@@ -243,9 +247,12 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
   if (handlerFn) {
     try {
-      return await handlerFn(event);
+      const response = await handlerFn(event);
+      devLog('jobs response', { method, path, statusCode: (response as { statusCode?: number }).statusCode });
+      return response;
     } catch (err) {
       console.error('Handler error', err);
+      devLog('jobs handler error', { method, path, error: String(err) });
       return json(500, { code: 'INTERNAL_ERROR', message: 'Internal server error' });
     }
   }

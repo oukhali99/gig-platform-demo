@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
+import { devLog } from '@gig-platform/common';
 import * as cognito from './cognito.js';
 
 const corsHeaders = {
@@ -107,14 +108,26 @@ async function handleMe(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyR
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   const method = event.requestContext?.http?.method ?? 'GET';
   const path = event.rawPath ?? '';
+
+  devLog('identity request', {
+    method,
+    path,
+    requestId: event.requestContext?.requestId,
+  });
+
   try {
-    if (method === 'POST' && path === '/auth/register') return await handleRegister(event);
-    if (method === 'POST' && path === '/auth/login') return await handleLogin(event);
-    if (method === 'POST' && path === '/auth/refresh') return await handleRefresh(event);
-    if (method === 'GET' && path === '/auth/me') return await handleMe(event);
-    return json(404, { code: 'NOT_FOUND', message: 'Route not found' });
+    let response: APIGatewayProxyResultV2;
+    if (method === 'POST' && path === '/auth/register') response = await handleRegister(event);
+    else if (method === 'POST' && path === '/auth/login') response = await handleLogin(event);
+    else if (method === 'POST' && path === '/auth/refresh') response = await handleRefresh(event);
+    else if (method === 'GET' && path === '/auth/me') response = await handleMe(event);
+    else response = json(404, { code: 'NOT_FOUND', message: 'Route not found' });
+
+    devLog('identity response', { method, path, statusCode: (response as { statusCode?: number }).statusCode });
+    return response;
   } catch (err) {
     console.error('Identity handler error', err);
+    devLog('identity handler error', { method, path, error: String(err) });
     return json(500, { code: 'INTERNAL_ERROR', message: 'Internal server error' });
   }
 }
