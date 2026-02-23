@@ -2,6 +2,32 @@
 
 Each service (or bounded context) owns its data, exposes APIs and/or consumes events, and uses its own storage. No shared databases.
 
+```mermaid
+flowchart LR
+  subgraph Identity [Identity]
+    I1[Users, roles]
+  end
+  subgraph Jobs [Jobs]
+    J1[Jobs, categories]
+  end
+  subgraph Workers [Workers]
+    W1[Profiles, skills]
+  end
+  subgraph Bookings [Bookings]
+    B1[Bookings]
+  end
+  subgraph Payments [Payments]
+    P1[Payments, holds]
+  end
+  subgraph Notifications [Notifications]
+    N1[Delivery log]
+  end
+  Jobs --> Bookings
+  Workers --> Bookings
+  Bookings --> Payments
+  Bookings --> Notifications
+```
+
 ---
 
 ## Identity

@@ -2,6 +2,29 @@
 
 Domain events are published to EventBridge (or chosen event bus). Consumers must handle **at-least-once** delivery and process events **idempotently**.
 
+```mermaid
+flowchart LR
+  subgraph producers [Producers]
+    Jobs[Jobs]
+    Bookings[Bookings]
+    Payments[Payments]
+  end
+  subgraph bus [Event bus]
+    EB[EventBridge]
+  end
+  subgraph consumers [Consumers]
+    Notif[Notifications]
+    Pay[Payments]
+    Workers[Workers]
+  end
+  Jobs --> EB
+  Bookings --> EB
+  Payments --> EB
+  EB --> Notif
+  EB --> Pay
+  EB --> Workers
+```
+
 ---
 
 ## Event envelope (all events)

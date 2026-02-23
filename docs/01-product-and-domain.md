@@ -33,6 +33,19 @@
 
 ### Happy path
 
+```mermaid
+flowchart LR
+  Post[Post a job]
+  Discovery[Discovery]
+  Booking[Booking]
+  Work[Work]
+  Payment[Payment and review]
+  Post --> Discovery
+  Discovery --> Booking
+  Booking --> Work
+  Work --> Payment
+```
+
 1. **Post a job** — Client creates a job (category e.g. landscaping, location, description, budget, preferred schedule).
 2. **Discovery** — Workers see the job (browse or match); workers apply or client invites.
 3. **Booking** — Client selects a worker (or worker accepts); booking is created and confirmed.
@@ -48,6 +61,25 @@
 ---
 
 ## Bounded contexts
+
+```mermaid
+flowchart TB
+  subgraph contexts [Bounded contexts]
+    Identity[Identity and auth]
+    Jobs[Jobs]
+    Workers[Workers]
+    Bookings[Bookings]
+    Payments[Payments]
+    Notifications[Notifications]
+    Reviews[Reviews]
+  end
+  Jobs --> Bookings
+  Workers --> Bookings
+  Bookings --> Payments
+  Bookings --> Notifications
+  Bookings --> Reviews
+  Reviews --> Workers
+```
 
 Domains that will map to services or subsystems:
 

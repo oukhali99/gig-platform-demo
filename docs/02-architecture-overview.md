@@ -42,6 +42,29 @@ flowchart LR
   EB --> Notifications
 ```
 
+### Create-job flow (sequence)
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant APIGW as API Gateway
+  participant Lambda as Jobs Lambda
+  participant DDB as DynamoDB
+  participant EB as EventBridge
+  participant Notif as Notifications
+
+  Client->>APIGW: POST /jobs
+  APIGW->>Lambda: invoke
+  Lambda->>DDB: put job
+  DDB-->>Lambda: ok
+  Lambda->>EB: put job.created
+  EB-->>Lambda: ok
+  Lambda-->>APIGW: 201 + job
+  APIGW-->>Client: 201 + job
+  EB->>Notif: job.created
+  Notif->>Notif: send email or in-app
+```
+
 ---
 
 ## Decoupling strategy
