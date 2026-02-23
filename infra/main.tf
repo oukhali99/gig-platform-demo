@@ -121,11 +121,11 @@ resource "aws_iam_role_policy_attachment" "jobs_lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Lambda deployment package (run yarn build:lambda from services/jobs before first apply)
+# Lambda deployment package (run yarn build:lambda from app/services/jobs before first apply)
 data "archive_file" "jobs" {
   type        = "zip"
-  source_dir  = "${path.module}/../services/jobs/build/package"
-  output_path = "${path.module}/../services/jobs/build/package.zip"
+  source_dir  = "${path.module}/../app/services/jobs/build/package"
+  output_path = "${path.module}/../app/services/jobs/build/package.zip"
 }
 
 resource "aws_lambda_function" "jobs" {

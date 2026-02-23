@@ -9,8 +9,8 @@ This project uses **Yarn** for package management.
 
 - **Install dependencies**: Use `yarn` or `yarn install` at the repo root or in a workspace. Do not use `npm install` or `npm ci`.
 - **Run scripts**: Use `yarn <script>` or `yarn run <script>` (e.g. `yarn build`, `yarn deploy` at root; from jobs workspace, `yarn build:lambda`). Do not use `npm run`.
-- **Add dependencies**: Use `yarn add` / `yarn add -D` in the relevant workspace (e.g. `services/jobs`). Do not use `npm install <pkg>`.
-- **Workspaces**: Root has workspaces (e.g. `services/jobs`). Use `yarn workspaces run build` from root to run a script in all workspaces.
+- **Add dependencies**: Use `yarn add` / `yarn add -D` in the relevant workspace (e.g. `app/services/jobs`). Do not use `npm install <pkg>`.
+- **Workspaces**: Root has workspaces (e.g. `app/services/jobs`). Use `yarn workspaces run build` from root to run a script in all workspaces.
 - **Lockfile**: Commit `yarn.lock`. Do not introduce `package-lock.json` or remove `yarn.lock`.
 
 When editing scripts, docs, or CI, use Yarn commands only.

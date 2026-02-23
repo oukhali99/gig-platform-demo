@@ -181,7 +181,7 @@ Body: any subset of `title`, `categoryId`, `location`, `description`, `budget`, 
 
 ## Events (EventBridge)
 
-The service publishes events that follow the shared [event contract](../../docs/05-event-contracts.md): envelope with `eventId`, `eventType`, `eventVersion`, `correlationId`, `timestamp`, `producer`, `payload`.
+The service publishes events that follow the shared [event contract](../../../docs/05-event-contracts.md): envelope with `eventId`, `eventType`, `eventVersion`, `correlationId`, `timestamp`, `producer`, `payload`.
 
 | Event type     | When | Payload |
 |----------------|------|---------|
@@ -226,9 +226,9 @@ Environment variables (set by Terraform):
 
 ## Build and deploy
 
-- **Build**: From repo root, `yarn build` (workspaces), or from `services/jobs`: `yarn build`. Output is `dist/`.
-- **Lambda package**: From `services/jobs`, `yarn build:lambda`. Produces `build/package/` (Terraform zips it for the Lambda).
-- **Deploy**: From repo root, `yarn deploy` (runs jobs build:lambda then terraform apply). See [infra/README.md](../../infra/README.md).
+- **Build**: From repo root, `yarn build` (workspaces), or from `app/services/jobs`: `yarn build`. Output is `dist/`.
+- **Lambda package**: From `app/services/jobs`, `yarn build:lambda`. Produces `build/package/` (Terraform zips it for the Lambda).
+- **Deploy**: From repo root, `yarn deploy` (runs jobs build:lambda then terraform apply). See [infra/README.md](../../../infra/README.md).
 
 ---
 

@@ -8,6 +8,6 @@
     "destroy": "cd infra && terraform destroy -auto-approve"
   },
   "workspaces": [
-    "services/jobs"
+    "app/services/jobs"
   ]
 }
