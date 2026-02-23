@@ -39,6 +39,12 @@ function getJobIdFromPath(event: APIGatewayProxyEventV2): string | null {
   return raw ?? null;
 }
 
+/** JWT sub from Cognito authorizer (for ownership and "my" lists). */
+function getSubFromEvent(event: APIGatewayProxyEventV2): string | null {
+  const ctx = event.requestContext as { authorizer?: { jwt?: { claims?: Record<string, string> } } };
+  return ctx?.authorizer?.jwt?.claims?.sub ?? null;
+}
+
 function parseBody<T>(event: APIGatewayProxyEventV2): T | null {
   if (!event.body) return null;
   try {
@@ -83,9 +89,12 @@ async function handleCreateJob(event: APIGatewayProxyEventV2): Promise<APIGatewa
 
   const now = new Date().toISOString();
   const jobId = randomUUID();
+  const sub = getSubFromEvent(event);
+  const clientId = sub ?? 'anonymous';
+
   const job = {
     jobId,
-    clientId: validated.data.clientId ?? 'anonymous',
+    clientId,
     title: validated.data.title,
     categoryId: validated.data.categoryId,
     location: validated.data.location,
@@ -156,9 +165,24 @@ async function handleListJobs(event: APIGatewayProxyEventV2): Promise<APIGateway
   const category = q.category;
   const location = q.location;
   const cursor = q.cursor;
+  const clientIdParam = q.clientId;
 
   if (limit !== undefined && (Number.isNaN(limit) || limit < 1 || limit > 100)) {
     return badRequest([{ field: 'limit', message: 'Must be 1–100' }]);
+  }
+
+  if (clientIdParam === 'me') {
+    const sub = getSubFromEvent(event);
+    if (!sub) return json(401, { code: 'UNAUTHORIZED', message: 'Authentication required' });
+    const result = await repo.listJobsByClient(sub, limit ?? 20, cursor);
+    let items = result.items;
+    if (status) items = items.filter((j) => j.status === status);
+    if (category) items = items.filter((j) => j.categoryId === category);
+    if (location) {
+      const loc = location.toLowerCase();
+      items = items.filter((j) => j.location.toLowerCase().includes(loc));
+    }
+    return json(200, { items, nextCursor: result.nextCursor });
   }
 
   const result = await repo.listJobs({

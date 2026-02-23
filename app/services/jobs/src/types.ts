@@ -40,6 +40,8 @@ export interface ListJobsQuery {
   location?: string;
   limit?: number;
   cursor?: string;
+  /** When "me", list jobs for the authenticated user (JWT sub). */
+  clientId?: string;
 }
 
 export interface ListJobsResult {

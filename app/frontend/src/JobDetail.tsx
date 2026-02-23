@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getJob, publishJob, type Job } from './api';
+import { getJob, publishJob, deleteJob, type Job } from './api';
 
 export default function JobDetail() {
   const { auth, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!auth || !id) return;
@@ -31,6 +33,15 @@ export default function JobDetail() {
       .finally(() => setPublishing(false));
   };
 
+  const handleDeleteDraft = () => {
+    if (!id || job?.status !== 'draft') return;
+    setDeleting(true);
+    deleteJob(id)
+      .then(() => navigate('/drafts', { replace: true }))
+      .catch((e) => setError(e.message))
+      .finally(() => setDeleting(false));
+  };
+
   if (loading) return <p>Loading…</p>;
   if (error) return <p className="error">Error: {error}</p>;
   if (!job) return <p>Job not found.</p>;
@@ -47,9 +58,14 @@ export default function JobDetail() {
         <p><strong>Category:</strong> {job.categoryId}</p>
         <p>{job.description}</p>
         {job.status === 'draft' && (
-          <button onClick={handlePublish} disabled={publishing}>
-            {publishing ? 'Publishing…' : 'Publish job'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <button onClick={handlePublish} disabled={publishing}>
+              {publishing ? 'Publishing…' : 'Publish job'}
+            </button>
+            <button type="button" className="secondary" onClick={handleDeleteDraft} disabled={deleting}>
+              {deleting ? 'Deleting…' : 'Delete draft'}
+            </button>
+          </div>
         )}
       </div>
     </>

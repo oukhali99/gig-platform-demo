@@ -283,7 +283,7 @@ resource "aws_apigatewayv2_api" "jobs" {
 
   cors_configuration {
     allow_origins = ["*"]
-    allow_methods = ["GET", "POST", "PUT", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allow_headers = ["Content-Type", "Authorization", "X-Correlation-Id"]
   }
 }
@@ -381,6 +381,14 @@ resource "aws_apigatewayv2_route" "jobs_update" {
 resource "aws_apigatewayv2_route" "jobs_publish" {
   api_id             = aws_apigatewayv2_api.jobs.id
   route_key          = "POST /jobs/{id}/publish"
+  target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "jobs_delete" {
+  api_id             = aws_apigatewayv2_api.jobs.id
+  route_key          = "DELETE /jobs/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id

@@ -3,6 +3,7 @@ import {
   PutItemCommand,
   GetItemCommand,
   UpdateItemCommand,
+  DeleteItemCommand,
   QueryCommand,
   type QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
@@ -88,6 +89,20 @@ export async function updateJob(
   );
   if (!result.Attributes) return null;
   return unmarshall(result.Attributes) as Job;
+}
+
+/** Delete a job; only succeeds if status is draft and clientId matches (owner). */
+export async function deleteJob(jobId: string, clientId: string): Promise<boolean> {
+  const result = await client.send(
+    new DeleteItemCommand({
+      TableName: TABLE_NAME,
+      Key: marshall({ jobId }),
+      ConditionExpression: '#status = :draft AND clientId = :cid',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: marshall({ ':draft': 'draft', ':cid': clientId }),
+    })
+  );
+  return true;
 }
 
 export async function updateJobStatus(

@@ -77,13 +77,19 @@ export interface ListJobsResponse {
   nextCursor?: string;
 }
 
-export async function listJobs(params?: { status?: string; limit?: number; cursor?: string }): Promise<ListJobsResponse> {
+export async function listJobs(params?: { status?: string; clientId?: string; limit?: number; cursor?: string }): Promise<ListJobsResponse> {
   const sp = new URLSearchParams();
   if (params?.status) sp.set('status', params.status);
+  if (params?.clientId) sp.set('clientId', params.clientId);
   if (params?.limit) sp.set('limit', String(params.limit));
   if (params?.cursor) sp.set('cursor', params.cursor);
   const q = sp.toString();
   return request<ListJobsResponse>(`/jobs${q ? `?${q}` : ''}`);
+}
+
+/** List current user's draft jobs. */
+export async function listMyDrafts(params?: { limit?: number; cursor?: string }): Promise<ListJobsResponse> {
+  return listJobs({ clientId: 'me', status: 'draft', limit: params?.limit ?? 50, cursor: params?.cursor });
 }
 
 export async function getJob(id: string): Promise<Job> {
@@ -105,4 +111,14 @@ export async function createJob(body: CreateJobBody): Promise<Job> {
 
 export async function publishJob(id: string): Promise<Job> {
   return request<Job>(`/jobs/${id}/publish`, { method: 'POST' });
+}
+
+export async function deleteJob(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/jobs/${id}`, {
+    method: 'DELETE',
+    headers: { ...(getAuthToken() ? { Authorization: `Bearer ${getAuthToken()}` } : {}) },
+  });
+  if (res.status === 204) return;
+  const err = await res.json().catch(() => ({}));
+  throw new Error((err as { message?: string }).message ?? res.statusText);
 }
