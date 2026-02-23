@@ -1,5 +1,63 @@
 const BASE = (import.meta.env.VITE_JOBS_API_URL as string)?.replace(/\/$/, '') ?? '';
 
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const url = BASE ? `${BASE}${path}` : path;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(options?.headers as Record<string, string>) };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(url, { ...options, headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { message?: string }).message ?? res.statusText);
+  }
+  return res.json() as Promise<T>;
+}
+
+// --- Auth ---
+export interface AuthUser {
+  sub: string;
+  role: string;
+  email?: string;
+}
+
+export async function authRegister(email: string, password: string, role: 'client' | 'worker'): Promise<{ sub: string; role: string }> {
+  return request<{ sub: string; role: string }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, role }),
+  });
+}
+
+export async function authLogin(email: string, password: string): Promise<{
+  idToken: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}> {
+  return request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+}
+
+export async function authRefresh(refreshToken: string): Promise<{
+  idToken: string;
+  accessToken: string;
+  expiresIn: number;
+}> {
+  return request('/auth/refresh', { method: 'POST', body: JSON.stringify({ refreshToken }) });
+}
+
+export async function authMe(): Promise<AuthUser> {
+  return request<AuthUser>('/auth/me');
+}
+
+// --- Jobs ---
 export interface Job {
   jobId: string;
   clientId: string;
@@ -17,19 +75,6 @@ export interface Job {
 export interface ListJobsResponse {
   items: Job[];
   nextCursor?: string;
-}
-
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = BASE ? `${BASE}${path}` : path;
-  const res = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message ?? res.statusText);
-  }
-  return res.json() as Promise<T>;
 }
 
 export async function listJobs(params?: { status?: string; limit?: number; cursor?: string }): Promise<ListJobsResponse> {
@@ -52,7 +97,6 @@ export interface CreateJobBody {
   description: string;
   budget: string;
   scheduledAt: string;
-  clientId?: string;
 }
 
 export async function createJob(body: CreateJobBody): Promise<Job> {

@@ -1,0 +1,90 @@
+import {
+  CognitoIdentityProviderClient,
+  SignUpCommand,
+  AdminConfirmSignUpCommand,
+  AdminAddUserToGroupCommand,
+  InitiateAuthCommand,
+  AuthFlowType,
+} from '@aws-sdk/client-cognito-identity-provider';
+
+const client = new CognitoIdentityProviderClient({});
+const USER_POOL_ID = process.env.USER_POOL_ID!;
+const CLIENT_ID = process.env.CLIENT_ID!;
+
+export async function register(email: string, password: string, role: string): Promise<{ sub: string }> {
+  const { UserSub } = await client.send(
+    new SignUpCommand({
+      ClientId: CLIENT_ID,
+      Username: email,
+      Password: password,
+      UserAttributes: [{ Name: 'email', Value: email }],
+    })
+  );
+  if (!UserSub) throw new Error('SignUp did not return UserSub');
+  await client.send(
+    new AdminConfirmSignUpCommand({
+      UserPoolId: USER_POOL_ID,
+      Username: email,
+    })
+  );
+  const groupName = role === 'worker' ? 'worker' : 'client';
+  await client.send(
+    new AdminAddUserToGroupCommand({
+      UserPoolId: USER_POOL_ID,
+      Username: email,
+      GroupName: groupName,
+    })
+  );
+  return { sub: UserSub };
+}
+
+export async function login(email: string, password: string): Promise<{
+  idToken: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}> {
+  const result = await client.send(
+    new InitiateAuthCommand({
+      ClientId: CLIENT_ID,
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+      },
+    })
+  );
+  const session = result.AuthenticationResult;
+  if (!session?.IdToken || !session.AccessToken || !session.RefreshToken || session.ExpiresIn === undefined) {
+    throw new Error('Invalid auth result');
+  }
+  return {
+    idToken: session.IdToken,
+    accessToken: session.AccessToken,
+    refreshToken: session.RefreshToken,
+    expiresIn: session.ExpiresIn,
+  };
+}
+
+export async function refresh(refreshToken: string): Promise<{
+  idToken: string;
+  accessToken: string;
+  expiresIn: number;
+}> {
+  const result = await client.send(
+    new InitiateAuthCommand({
+      ClientId: CLIENT_ID,
+      AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
+      AuthParameters: { REFRESH_TOKEN: refreshToken },
+    })
+  );
+  const session = result.AuthenticationResult;
+  if (!session?.IdToken || !session.AccessToken || session.ExpiresIn === undefined) {
+    throw new Error('Invalid refresh result');
+  }
+  return {
+    idToken: session.IdToken,
+    accessToken: session.AccessToken,
+    expiresIn: session.ExpiresIn,
+  };
+}

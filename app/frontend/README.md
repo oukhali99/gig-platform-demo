@@ -1,13 +1,13 @@
 # Frontend
 
-Simple React app for the gig platform (jobs: list, create, view, publish).
+React app for the gig platform: register/login (Cognito via identity API), then list jobs, create job, view and publish.
 
 ## Setup
 
 ```bash
 yarn install
 cp .env.example .env
-# Edit .env: set VITE_JOBS_API_URL to your Jobs API URL (from `terraform output jobs_api_url` or infra output).
+# Edit .env: set VITE_JOBS_API_URL to your API base URL (from `terraform output api_url`).
 ```
 
 ## Run
@@ -16,7 +16,7 @@ cp .env.example .env
 yarn dev
 ```
 
-Open http://localhost:5173. List shows published jobs; use “Post a job” to create (draft), then open the job and click “Publish job” to publish.
+Open http://localhost:5173. Register or log in; then list jobs, post a job (draft), open the job and click “Publish job” to publish. All job API calls require a valid JWT (sent automatically after login).
 
 ## Build
 

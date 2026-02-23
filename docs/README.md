@@ -17,6 +17,7 @@ Pre-build documentation for the gig platform: a decoupled, AWS microservices-bas
 | 07 | [07-security-and-compliance.md](07-security-and-compliance.md) | Authentication, authorization, network, secrets, compliance. |
 | 08 | [08-operations-and-observability.md](08-operations-and-observability.md) | Logging, metrics, tracing, alerts, runbooks, DR. |
 | — | [adr/](adr/) | Architecture decision records (template + ADR-001 to ADR-004). |
+| — | [identity-service.md](identity-service.md) | Identity service: register, login, refresh, me; Cognito, JWT, build/deploy. |
 
 ---
 

@@ -1,19 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 import { listJobs, type Job } from './api';
 
 export default function JobList() {
+  const { auth, loading: authLoading } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!auth) return;
     listJobs({ status: 'published', limit: 20 })
       .then((res) => setJobs(res.items))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [auth]);
 
+  if (authLoading) return <p>Loading…</p>;
+  if (!auth) return <Navigate to="/login" replace />;
   if (loading) return <p>Loading jobs…</p>;
   if (error) return <p className="error">Error: {error}</p>;
 

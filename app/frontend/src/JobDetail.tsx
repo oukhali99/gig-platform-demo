@@ -1,22 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 import { getJob, publishJob, type Job } from './api';
 
 export default function JobDetail() {
+  const { auth, loading: authLoading } = useAuth();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!auth || !id) return;
     getJob(id)
       .then(setJob)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [auth, id]);
+
+  if (authLoading) return <p>Loading…</p>;
+  if (!auth) return <Navigate to="/login" replace />;
 
   const handlePublish = () => {
     if (!id || job?.status !== 'draft') return;
