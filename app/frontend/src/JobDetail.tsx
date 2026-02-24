@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getJob, publishJob, deleteJob, type Job } from './api';
+import { getJob, publishJob, deleteJob, createBooking, listBookings, type Job, type Booking } from './api';
 
 export default function JobDetail() {
   const { auth, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null);
+  const [myBooking, setMyBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!auth || !id) return;
@@ -20,6 +23,16 @@ export default function JobDetail() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [auth, id]);
+
+  useEffect(() => {
+    if (!auth?.user?.sub || !id || !job || job.status !== 'published') return;
+    listBookings({ jobId: id, limit: 50 })
+      .then((res) => {
+        const mine = res.items.find((b) => b.workerId === auth.user!.sub);
+        setMyBooking(mine ?? null);
+      })
+      .catch(() => setMyBooking(null));
+  }, [auth?.user?.sub, id, job?.status]);
 
   if (authLoading) return <p>Loading…</p>;
   if (!auth) return <Navigate to="/login" replace />;
@@ -42,13 +55,31 @@ export default function JobDetail() {
       .finally(() => setDeleting(false));
   };
 
+  const handleBookJob = () => {
+    if (!id || !auth?.user?.sub || job?.status !== 'published') return;
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = crypto.randomUUID?.() ?? `book-${id}-${Date.now()}`;
+    }
+    setBooking(true);
+    setError(null);
+    createBooking(id, idempotencyKeyRef.current)
+      .then((b) => {
+        setMyBooking(b);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setBooking(false));
+  };
+
+  const isOwner = auth?.user?.sub && job?.clientId === auth.user.sub;
+  const canBook = job?.status === 'published' && auth?.user?.sub && !isOwner;
+
   if (loading) return <p>Loading…</p>;
   if (error) return <p className="error">Error: {error}</p>;
   if (!job) return <p>Job not found.</p>;
 
   return (
     <>
-      <p><a href="/">← Back to jobs</a></p>
+      <p><Link to="/">← Back to jobs</Link></p>
       <div className="card">
         <span className={`badge ${job.status}`}>{job.status}</span>
         <h1 style={{ marginTop: '0.5rem' }}>{job.title}</h1>
@@ -65,6 +96,21 @@ export default function JobDetail() {
             <button type="button" className="secondary" onClick={handleDeleteDraft} disabled={deleting}>
               {deleting ? 'Deleting…' : 'Delete draft'}
             </button>
+          </div>
+        )}
+        {canBook && (
+          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+            {myBooking ? (
+              <p>
+                <span className={`badge ${myBooking.status}`}>{myBooking.status}</span>
+                {' '}You have a booking for this job.{' '}
+                <Link to="/bookings">View in My bookings</Link>
+              </p>
+            ) : (
+              <button onClick={handleBookJob} disabled={booking}>
+                {booking ? 'Booking…' : 'Book this job'}
+              </button>
+            )}
           </div>
         )}
       </div>

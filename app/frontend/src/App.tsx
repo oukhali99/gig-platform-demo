@@ -4,6 +4,7 @@ import JobList from './JobList';
 import JobDetail from './JobDetail';
 import CreateJob from './CreateJob';
 import DraftList from './DraftList';
+import BookingsList from './BookingsList';
 import Login from './Login';
 import Register from './Register';
 
@@ -16,6 +17,7 @@ function Nav() {
       {auth ? (
         <>
           <Link to="/drafts">Drafts</Link>
+          <Link to="/bookings">My bookings</Link>
           <Link to="/jobs/new">Post a job</Link>
           <span style={{ marginLeft: 'auto' }}>{auth.user.email ?? auth.user.sub}</span>
           <button type="button" className="secondary" onClick={logout} style={{ marginLeft: '0.5rem' }}>Logout</button>
@@ -48,6 +50,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/jobs/new" element={<RequireAuth><CreateJob /></RequireAuth>} />
           <Route path="/drafts" element={<RequireAuth><DraftList /></RequireAuth>} />
+          <Route path="/bookings" element={<RequireAuth><BookingsList /></RequireAuth>} />
           <Route path="/jobs/:id" element={<JobDetail />} />
         </Routes>
       </main>

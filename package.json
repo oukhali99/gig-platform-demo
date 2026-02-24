@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "build": "yarn workspaces run build",
-    "deploy": "yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda && cd infra && terraform apply -auto-approve",
+    "deploy": "yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda && yarn workspace bookings-service build:lambda && cd infra && terraform apply -auto-approve",
     "destroy": "cd infra && terraform destroy -auto-approve",
-    "deploy:dev": "yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda && cd infra && terraform apply -auto-approve -var=environment=dev"
+    "deploy:dev": "yarn workspace jobs-service build:lambda && yarn workspace identity-service build:lambda && yarn workspace bookings-service build:lambda && cd infra && terraform apply -auto-approve -var=environment=dev"
   },
   "workspaces": [
     "app/common",
     "app/services/jobs",
-    "app/services/identity"
+    "app/services/identity",
+    "app/services/bookings"
   ]
 }

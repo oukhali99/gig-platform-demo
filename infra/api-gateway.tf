@@ -8,7 +8,7 @@ resource "aws_apigatewayv2_api" "jobs" {
   cors_configuration {
     allow_origins = ["*"]
     allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers = ["Content-Type", "Authorization", "X-Correlation-Id"]
+    allow_headers = ["Content-Type", "Authorization", "X-Correlation-Id", "Idempotency-Key"]
   }
 }
 

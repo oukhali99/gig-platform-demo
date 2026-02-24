@@ -121,3 +121,67 @@ export async function deleteJob(id: string): Promise<void> {
   const err = await res.json().catch(() => ({}));
   throw new Error((err as { message?: string }).message ?? res.statusText);
 }
+
+// --- Bookings ---
+export type BookingStatus =
+  | 'requested'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled';
+
+export interface Booking {
+  bookingId: string;
+  jobId: string;
+  workerId: string;
+  clientId: string;
+  status: BookingStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListBookingsResponse {
+  items: Booking[];
+  nextCursor?: string;
+}
+
+export async function createBooking(jobId: string, idempotencyKey: string): Promise<Booking> {
+  return request<Booking>('/bookings', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify({ jobId }),
+  });
+}
+
+export async function listBookings(params: {
+  jobId?: string;
+  workerId?: string;
+  status?: BookingStatus;
+  limit?: number;
+  cursor?: string;
+}): Promise<ListBookingsResponse> {
+  const sp = new URLSearchParams();
+  if (params.jobId) sp.set('jobId', params.jobId);
+  if (params.workerId) sp.set('workerId', params.workerId);
+  if (params.status) sp.set('status', params.status);
+  if (params.limit) sp.set('limit', String(params.limit));
+  if (params.cursor) sp.set('cursor', params.cursor);
+  const q = sp.toString();
+  return request<ListBookingsResponse>(`/bookings${q ? `?${q}` : ''}`);
+}
+
+export async function getBooking(id: string): Promise<Booking> {
+  return request<Booking>(`/bookings/${id}`);
+}
+
+export async function confirmBooking(id: string): Promise<Booking> {
+  return request<Booking>(`/bookings/${id}/confirm`, { method: 'POST' });
+}
+
+export async function completeBooking(id: string): Promise<Booking> {
+  return request<Booking>(`/bookings/${id}/complete`, { method: 'POST' });
+}
+
+export async function cancelBooking(id: string): Promise<Booking> {
+  return request<Booking>(`/bookings/${id}/cancel`, { method: 'POST' });
+}

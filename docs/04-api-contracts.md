@@ -38,7 +38,7 @@ APIs are exposed via API Gateway. Full OpenAPI/Smithy specs can be added later i
 
 | Method | Path (example) | Purpose |
 |--------|----------------|---------|
-| POST   | /bookings      | Create booking; body: jobId, workerId; **idempotency key required**. |
+| POST   | /bookings      | Create booking; body: jobId. Worker is the authenticated user (JWT sub). **Idempotency-Key** header required. |
 | GET    | /bookings/:id  | Get booking by ID. |
 | GET    | /bookings      | List bookings (query: jobId, workerId, status, limit, cursor). |
 | POST   | /bookings/:id/confirm | Confirm booking (client). |
