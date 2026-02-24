@@ -17,10 +17,10 @@ APIs are exposed via API Gateway. Full OpenAPI/Smithy specs can be added later i
 
 | Method | Path (example) | Purpose |
 |--------|----------------|---------|
-| POST   | /auth/register | Register (client or worker); body: email, password, role. |
+| POST   | /auth/register | Register; body: email, password. |
 | POST   | /auth/login    | Login; returns tokens. |
 | POST   | /auth/refresh  | Refresh access token. |
-| GET    | /auth/me       | Current user and role. |
+| GET    | /auth/me       | Current user (sub, email). |
 
 ### Jobs
 
@@ -31,17 +31,6 @@ APIs are exposed via API Gateway. Full OpenAPI/Smithy specs can be added later i
 | GET    | /jobs/:id      | Get job by ID. |
 | GET    | /jobs          | List jobs (query: status, category, location, limit, cursor). |
 | POST   | /jobs/:id/publish | Publish draft job. |
-
-**Ids**: `id` is UUID.
-
-### Workers
-
-| Method | Path (example) | Purpose |
-|--------|----------------|---------|
-| GET    | /workers/me    | Current user's worker profile. |
-| PUT    | /workers/me    | Create/update worker profile; body: displayName, skills, availability. |
-| GET    | /workers/:id   | Get worker by ID (public profile). |
-| GET    | /workers       | List workers (query: skills, location, limit, cursor). |
 
 **Ids**: `id` is UUID.
 

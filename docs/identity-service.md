@@ -1,6 +1,6 @@
 # Identity service
 
-The identity service handles user registration, sign-in, token refresh, and current-user context. It backs the platform’s authentication and is the single source of identity and role (client vs worker) for API Gateway and other services.
+The identity service handles user registration, sign-in, token refresh, and current-user context. It backs the platform’s authentication and is the single source of identity for API Gateway and other services. There is no client/worker role; any user can post jobs and take gigs.
 
 ---
 
@@ -13,7 +13,7 @@ The identity service handles user registration, sign-in, token refresh, and curr
 | **Auth provider** | Amazon Cognito user pool (see [ADR-003](adr/ADR-003-auth-cognito.md)) |
 | **API surface** | Register, login, refresh, me — see [API contracts](04-api-contracts.md#identity). |
 
-The service owns no database; identity and roles are stored in Cognito. The app client uses standard attributes (e.g. `email`) for read/write. Role is stored via Cognito groups (`client`, `worker`); after sign-up the user is added to the chosen group and the JWT includes `cognito:groups` for authorization.
+The service owns no database; identity is stored in Cognito. The app client uses standard attributes (e.g. `email`) for read/write.
 
 ---
 
@@ -23,7 +23,7 @@ All auth routes are under `/auth/`. Base URL is the API Gateway stage URL (e.g. 
 
 ### POST /auth/register
 
-Register a new user (client or worker).
+Register a new user.
 
 **Request body**
 
@@ -31,14 +31,12 @@ Register a new user (client or worker).
 |-------|------|----------|-------------|
 | `email` | string | Yes | User email (used as Cognito username). |
 | `password` | string | Yes | Password (must satisfy Cognito pool policy). |
-| `role` | string | No | `"client"` or `"worker"`; defaults to `"client"`. |
 
 **Success** — `201`
 
 ```json
 {
-  "sub": "<cognito-user-sub-uuid>",
-  "role": "client"
+  "sub": "<cognito-user-sub-uuid>"
 }
 ```
 
@@ -140,7 +138,7 @@ Issue new ID and access tokens using a refresh token.
 
 ### GET /auth/me
 
-Return the current user and role. Requires a valid JWT in `Authorization: Bearer <token>` (validated by API Gateway Cognito authorizer).
+Return the current user (sub, email). Requires a valid JWT in `Authorization: Bearer <token>` (validated by API Gateway Cognito authorizer).
 
 **Headers**
 
@@ -153,7 +151,6 @@ Return the current user and role. Requires a valid JWT in `Authorization: Bearer
 ```json
 {
   "sub": "<cognito-user-sub-uuid>",
-  "role": "client",
   "email": "user@example.com"
 }
 ```
@@ -173,7 +170,6 @@ Return the current user and role. Requires a valid JWT in `Authorization: Bearer
 
 - **sub**: Cognito user UUID; use as stable user ID (e.g. `clientId` in jobs).
 - **email**: From Cognito standard attribute.
-- **cognito:groups**: Set at registration via Cognito groups; `["client"]` or `["worker"]` (role is derived from the first group).
 
 API Gateway is configured with a Cognito user pool authorizer for protected routes (e.g. `/jobs`, `/auth/me`). The authorizer validates the JWT and passes claims into the request context; the identity Lambda reads them for `/auth/me`; the jobs Lambda uses `sub` for ownership.
 

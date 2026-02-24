@@ -5,13 +5,10 @@ Each service (or bounded context) owns its data, exposes APIs and/or consumes ev
 ```mermaid
 flowchart LR
   subgraph Identity [Identity]
-    I1[Users, roles]
+    I1[Users]
   end
   subgraph Jobs [Jobs]
     J1[Jobs, categories]
-  end
-  subgraph Workers [Workers]
-    W1[Profiles, skills]
   end
   subgraph Bookings [Bookings]
     B1[Bookings]
@@ -23,7 +20,6 @@ flowchart LR
     N1[Delivery log]
   end
   Jobs --> Bookings
-  Workers --> Bookings
   Bookings --> Payments
   Bookings --> Notifications
 ```
@@ -35,10 +31,10 @@ flowchart LR
 | Aspect      | Detail |
 |------------|--------|
 | **Name**   | identity (or auth) |
-| **Owns**   | User identity, roles (client vs worker), auth tokens/sessions. |
+| **Owns**   | User identity, auth tokens/sessions. No client/worker role; any user can post jobs and take gigs. |
 | **Inbound**| API: sign-up, sign-in, token refresh; Cognito triggers if used. |
-| **Outbound**| Events: `UserRegistered`, `UserRoleUpdated` (if needed). APIs: none. |
-| **Storage**| Cognito user pool; optional DynamoDB for profile/role extensions. |
+| **Outbound**| Events: `UserRegistered` (if needed). APIs: none. |
+| **Storage**| Cognito user pool. |
 
 ---
 
@@ -51,18 +47,6 @@ flowchart LR
 | **Inbound**| API: create/update/list/get job. Events: none required for core flow. |
 | **Outbound**| Events: `JobCreated`, `JobPublished`, `JobClosed`. |
 | **Storage**| DynamoDB or RDS; table(s) for jobs, categories. |
-
----
-
-## Workers
-
-| Aspect      | Detail |
-|------------|--------|
-| **Name**   | workers-service |
-| **Owns**   | Worker profile, skills, availability, aggregate rating. |
-| **Inbound**| API: create/update/get profile, list availability. Events: `UserRegistered` (to create worker profile when role is worker). |
-| **Outbound**| Events: `WorkerProfileUpdated`. APIs: none. |
-| **Storage**| DynamoDB or RDS; table(s) for workers, skills, availability. |
 
 ---
 
@@ -109,7 +93,7 @@ flowchart LR
 | **Name**   | reviews-service |
 | **Owns**   | Review aggregate: rating, text, reviewer, reviewee, booking reference. |
 | **Inbound**| API: submit review, list reviews for worker/job. Events: `BookingCompleted` (allow review). |
-| **Outbound**| Events: `ReviewSubmitted` (consumed by workers-service to update rating). |
+| **Outbound**| Events: `ReviewSubmitted` (e.g. to update aggregate ratings). |
 | **Storage**| DynamoDB or RDS. |
 
 ---

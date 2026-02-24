@@ -15,7 +15,6 @@ flowchart LR
   end
   subgraph services [Microservices]
     Jobs[Jobs]
-    Workers[Workers]
     Bookings[Bookings]
     Payments[Payments]
     Notifications[Notifications]
@@ -27,16 +26,13 @@ flowchart LR
   Web --> APIGW
   Mobile --> APIGW
   APIGW --> Jobs
-  APIGW --> Workers
   APIGW --> Bookings
   APIGW --> Payments
   APIGW --> Identity
   Jobs --> EB
-  Workers --> EB
   Bookings --> EB
   Payments --> EB
   EB --> Jobs
-  EB --> Workers
   EB --> Bookings
   EB --> Payments
   EB --> Notifications
@@ -73,7 +69,7 @@ sequenceDiagram
 
 - **API Gateway** (REST or HTTP API) fronts all client-facing APIs.
 - Backed by **Lambda** and/or **containerized APIs** (e.g. ECS/Fargate).
-- Use for: get job details, create booking, get worker profile, auth.
+- Use for: get job details, create booking, auth.
 - Keep payloads and responses within service boundaries; call other services via their APIs when needed (or use events to avoid blocking).
 
 ### Asynchronous (events)

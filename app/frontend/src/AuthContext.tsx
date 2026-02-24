@@ -7,7 +7,7 @@ const AuthContext = createContext<{
   auth: AuthState;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role: 'client' | 'worker') => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
 } | null>(null);
 
@@ -27,8 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuth({ user, token: tokens.idToken });
   };
 
-  const register = async (email: string, password: string, role: 'client' | 'worker') => {
-    await api.authRegister(email, password, role);
+  const register = async (email: string, password: string) => {
+    await api.authRegister(email, password);
     await login(email, password);
   };
 

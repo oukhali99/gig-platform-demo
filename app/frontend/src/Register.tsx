@@ -7,7 +7,6 @@ export default function Register() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'client' | 'worker'>('client');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -16,7 +15,7 @@ export default function Register() {
     setError(null);
     setSubmitting(true);
     try {
-      await register(email, password, role);
+      await register(email, password);
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -34,11 +33,6 @@ export default function Register() {
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <label>Password</label>
         <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-        <label>I am a</label>
-        <select value={role} onChange={(e) => setRole(e.target.value as 'client' | 'worker')}>
-          <option value="client">Client (post jobs)</option>
-          <option value="worker">Worker (do jobs)</option>
-        </select>
         {error && <p className="error">{error}</p>}
         <button type="submit" disabled={submitting}>{submitting ? 'Registering…' : 'Register'}</button>
       </form>

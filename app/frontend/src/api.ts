@@ -25,14 +25,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 // --- Auth ---
 export interface AuthUser {
   sub: string;
-  role: string;
   email?: string;
 }
 
-export async function authRegister(email: string, password: string, role: 'client' | 'worker'): Promise<{ sub: string; role: string }> {
-  return request<{ sub: string; role: string }>('/auth/register', {
+export async function authRegister(email: string, password: string): Promise<{ sub: string }> {
+  return request<{ sub: string }>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, role }),
+    body: JSON.stringify({ email, password }),
   });
 }
 

@@ -140,6 +140,14 @@ async function handleUpdateJob(event: APIGatewayProxyEventV2): Promise<APIGatewa
     return json(409, { code: 'CONFLICT', message: 'Cannot update closed job' });
   }
 
+  const sub = getSubFromEvent(event);
+  if (!sub) {
+    return json(401, { code: 'UNAUTHORIZED', message: 'Authentication required' });
+  }
+  if (existing.clientId !== sub) {
+    return json(403, { code: 'FORBIDDEN', message: 'You are not the owner of this job' });
+  }
+
   const updatedAt = new Date().toISOString();
   const updated = await repo.updateJob(jobId, {
     title: body.title,
@@ -207,6 +215,12 @@ async function handlePublishJob(event: APIGatewayProxyEventV2): Promise<APIGatew
   if (!existing) return notFound('Job not found');
   if (existing.status !== 'draft') {
     return json(409, { code: 'CONFLICT', message: 'Job is not in draft status' });
+  }
+
+  const sub = getSubFromEvent(event);
+  if (!sub) return json(401, { code: 'UNAUTHORIZED', message: 'Authentication required' });
+  if (existing.clientId !== sub) {
+    return json(403, { code: 'FORBIDDEN', message: 'You are not the owner of this job' });
   }
 
   const updatedAt = new Date().toISOString();

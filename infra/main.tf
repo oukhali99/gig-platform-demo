@@ -107,16 +107,6 @@ resource "aws_cognito_user_pool_client" "main" {
   write_attributes = ["email"]
 }
 
-# Groups used for role (client vs worker); JWT includes cognito:groups (no schema change)
-resource "aws_cognito_user_group" "client" {
-  name         = "client"
-  user_pool_id = aws_cognito_user_pool.main.id
-}
-resource "aws_cognito_user_group" "worker" {
-  name         = "worker"
-  user_pool_id = aws_cognito_user_pool.main.id
-}
-
 # ---------------------------------------------------------------------------
 # Lambda - Jobs API handler
 # ---------------------------------------------------------------------------
@@ -238,7 +228,6 @@ resource "aws_iam_role_policy" "identity_lambda_cognito" {
         Action = [
           "cognito-idp:SignUp",
           "cognito-idp:AdminConfirmSignUp",
-          "cognito-idp:AdminAddUserToGroup",
           "cognito-idp:InitiateAuth"
         ]
         Resource = [aws_cognito_user_pool.main.arn]
@@ -417,3 +406,4 @@ resource "aws_lambda_permission" "identity_apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.jobs.execution_arn}/*/*"
 }
+

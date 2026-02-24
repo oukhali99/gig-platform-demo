@@ -15,14 +15,12 @@ flowchart LR
   subgraph consumers [Consumers]
     Notif[Notifications]
     Pay[Payments]
-    Workers[Workers]
   end
   Jobs --> EB
   Bookings --> EB
   Payments --> EB
   EB --> Notif
   EB --> Pay
-  EB --> Workers
 ```
 
 ---
@@ -53,12 +51,6 @@ Every event payload must include:
 | `job.published`| Job moved to published. | `jobId`, `clientId`. |
 | `job.closed`   | Job closed. | `jobId`, `reason` (optional). |
 
-### workers-service
-
-| Event type            | When | Payload (main fields) |
-|-----------------------|------|------------------------|
-| `worker.profile.updated` | Worker profile created/updated. | `workerId`, `skills[]`, `availability`. |
-
 ### bookings-service
 
 | Event type           | When | Payload (main fields) |
@@ -82,13 +74,13 @@ Every event payload must include:
 
 | Event type(s) | Consumer | Action |
 |---------------|----------|--------|
-| `job.created`, `job.published` | notifications-service | Notify matching workers or client. |
+| `job.created`, `job.published` | notifications-service | Notify job poster or interested users. |
 | `booking.created`, `booking.confirmed`, `booking.completed`, `booking.cancelled` | notifications-service | Send status emails/SMS. |
 | `booking.confirmed` | payments-service | Create hold. |
 | `booking.completed` | payments-service | Release payment. |
 | `booking.cancelled` | payments-service | Refund/cancel hold as per policy. |
 | `booking.completed` | reviews-service | Allow submitting review. |
-| `review.submitted` | workers-service | Update aggregate rating. |
+| `review.submitted` | (optional) | Update aggregate rating if a reviews/ratings service exists. |
 
 ---
 

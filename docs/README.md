@@ -25,11 +25,10 @@ Pre-build documentation for the gig platform: a decoupled, AWS microservices-bas
 
 | Term | Definition |
 |------|-------------|
-| **Booking** | A confirmed or in-progress assignment of a worker to a job; has a status lifecycle (e.g. requested, confirmed, in progress, completed, cancelled). |
+| **Booking** | A confirmed or in-progress assignment of a user (gig provider) to a job; has a status lifecycle (e.g. requested, confirmed, in progress, completed, cancelled). |
 | **Bounded context** | A domain boundary that maps to one or more services; has a clear ownership of data and behavior (e.g. Jobs, Bookings, Payments). |
-| **Client** | User persona who posts jobs and hires workers (job poster). |
 | **Event** | A domain event published to the event bus (e.g. JobCreated, BookingConfirmed); used for async integration between services. |
-| **Job** | A unit of work posted by a client (e.g. landscaping); has category, location, budget, schedule. |
-| **Worker** | User persona who performs gigs; has profile, skills, availability, and receives payment. |
+| **Job** | A unit of work posted by a user (e.g. landscaping); has category, location, budget, schedule. |
+| **User** | Any registered account; can post jobs and can perform gigs (no separate client/worker role or worker profile service). |
 | **Idempotency** | Processing the same request or event more than once yields the same result; required for safe retries and event replay. |
 | **Producer / Consumer** | Producer: service that publishes an event; Consumer: service that subscribes and handles the event. |

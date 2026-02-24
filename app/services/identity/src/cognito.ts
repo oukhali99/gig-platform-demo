@@ -2,7 +2,6 @@ import {
   CognitoIdentityProviderClient,
   SignUpCommand,
   AdminConfirmSignUpCommand,
-  AdminAddUserToGroupCommand,
   InitiateAuthCommand,
   AuthFlowType,
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -11,7 +10,7 @@ const client = new CognitoIdentityProviderClient({});
 const USER_POOL_ID = process.env.USER_POOL_ID!;
 const CLIENT_ID = process.env.CLIENT_ID!;
 
-export async function register(email: string, password: string, role: string): Promise<{ sub: string }> {
+export async function register(email: string, password: string): Promise<{ sub: string }> {
   const { UserSub } = await client.send(
     new SignUpCommand({
       ClientId: CLIENT_ID,
@@ -25,14 +24,6 @@ export async function register(email: string, password: string, role: string): P
     new AdminConfirmSignUpCommand({
       UserPoolId: USER_POOL_ID,
       Username: email,
-    })
-  );
-  const groupName = role === 'worker' ? 'worker' : 'client';
-  await client.send(
-    new AdminAddUserToGroupCommand({
-      UserPoolId: USER_POOL_ID,
-      Username: email,
-      GroupName: groupName,
     })
   );
   return { sub: UserSub };

@@ -25,32 +25,14 @@ function getClaims(event: APIGatewayProxyEventV2): Record<string, unknown> | nul
   return ctx?.authorizer?.jwt?.claims ?? null;
 }
 
-/** Role from JWT: cognito:groups (array or string); default "client". */
-function roleFromClaims(claims: Record<string, unknown>): string {
-  const raw = claims['cognito:groups'];
-  if (Array.isArray(raw) && raw.length) return raw[0] === 'worker' ? 'worker' : 'client';
-  if (typeof raw === 'string') {
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      if (Array.isArray(parsed) && parsed[0] === 'worker') return 'worker';
-      if (Array.isArray(parsed) && parsed[0]) return String(parsed[0]) === 'worker' ? 'worker' : 'client';
-    } catch {
-      if (raw === 'worker') return 'worker';
-    }
-    if (raw === 'worker' || raw === 'client') return raw;
-  }
-  return 'client';
-}
-
 async function handleRegister(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
-  const body = parseBody<{ email?: string; password?: string; role?: string }>(event);
+  const body = parseBody<{ email?: string; password?: string }>(event);
   if (!body?.email || !body?.password) {
     return json(400, { errors: [{ field: 'email', message: 'required' }, { field: 'password', message: 'required' }] });
   }
-  const role = body.role === 'worker' ? 'worker' : 'client';
   try {
-    const { sub } = await cognito.register(body.email, body.password, role);
-    return json(201, { sub, role });
+    const { sub } = await cognito.register(body.email, body.password);
+    return json(201, { sub });
   } catch (e: unknown) {
     const err = e as { name?: string; message?: string };
     if (err.name === 'UsernameExistsException') {
@@ -100,9 +82,8 @@ async function handleMe(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyR
     return json(401, { code: 'UNAUTHORIZED', message: 'Missing or invalid token' });
   }
   const sub = String(claims.sub ?? claims['cognito:username'] ?? '');
-  const role = roleFromClaims(claims);
   const email = String(claims.email ?? claims['cognito:username'] ?? '');
-  return json(200, { sub, role, email });
+  return json(200, { sub, email });
 }
 
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
