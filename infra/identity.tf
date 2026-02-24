@@ -4,7 +4,7 @@
 
 # Cognito (docs 07, ADR-003)
 resource "aws_cognito_user_pool" "main" {
-  name = "gig-platform-users"
+  name = "${var.name_prefix}-users-${var.environment}"
 
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
@@ -40,7 +40,7 @@ resource "aws_cognito_user_pool" "main" {
 }
 
 resource "aws_cognito_user_pool_client" "main" {
-  name         = "gig-platform-app"
+  name         = "${var.name_prefix}-app-${var.environment}"
   user_pool_id = aws_cognito_user_pool.main.id
 
   explicit_auth_flows = [
@@ -54,7 +54,7 @@ resource "aws_cognito_user_pool_client" "main" {
 
 # Identity Lambda
 resource "aws_iam_role" "identity_lambda" {
-  name = "gig-platform-identity-lambda-role"
+  name = "${var.name_prefix}-identity-lambda-role-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -100,7 +100,7 @@ data "archive_file" "identity" {
 }
 
 resource "aws_lambda_function" "identity" {
-  function_name    = "gig-platform-identity"
+  function_name    = "${var.name_prefix}-identity-${var.environment}"
   role             = aws_iam_role.identity_lambda.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"

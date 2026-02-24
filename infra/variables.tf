@@ -1,3 +1,9 @@
+variable "name_prefix" {
+  description = "Prefix for resource names (e.g. gig-platform)"
+  type        = string
+  default     = "gig-platform"
+}
+
 variable "aws_region" {
   description = "AWS region for resources"
   type        = string

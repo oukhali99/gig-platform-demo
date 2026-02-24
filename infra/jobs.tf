@@ -4,7 +4,7 @@
 
 # DynamoDB (docs/03-service-catalog, 06-data-and-persistence)
 resource "aws_dynamodb_table" "jobs" {
-  name         = "gig-platform-jobs"
+  name         = "${var.name_prefix}-jobs-${var.environment}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "jobId"
 
@@ -41,7 +41,7 @@ resource "aws_dynamodb_table" "jobs" {
 
 # Jobs Lambda
 resource "aws_iam_role" "jobs_lambda" {
-  name = "gig-platform-jobs-lambda-role"
+  name = "${var.name_prefix}-jobs-lambda-role-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -111,7 +111,7 @@ data "archive_file" "jobs" {
 }
 
 resource "aws_lambda_function" "jobs" {
-  function_name    = "gig-platform-jobs"
+  function_name    = "${var.name_prefix}-jobs-${var.environment}"
   role             = aws_iam_role.jobs_lambda.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"

@@ -2,7 +2,7 @@
 # API Gateway - shared HTTP API, JWT authorizer, stage
 # ---------------------------------------------------------------------------
 resource "aws_apigatewayv2_api" "jobs" {
-  name          = "gig-platform-api"
+  name          = "${var.name_prefix}-api-${var.environment}"
   protocol_type = "HTTP"
 
   cors_configuration {
