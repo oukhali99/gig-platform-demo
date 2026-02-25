@@ -1,6 +1,6 @@
 # Frontend
 
-React app for the gig platform: register/login (Cognito via identity API), then list jobs, create job, view and publish.
+React app for the gig platform: register/login (Cognito via identity API), list and create jobs, publish drafts, and manage bookings.
 
 ## Setup
 
@@ -16,7 +16,7 @@ cp .env.example .env
 yarn dev
 ```
 
-Open http://localhost:5173. Register or log in; then list jobs, post a job (draft), open the job and click “Publish job” to publish. All job API calls require a valid JWT (sent automatically after login).
+Open http://localhost:5173. Register or log in; then list jobs, post a job (draft), open the job and click “Publish job” to publish. From a published job you can “Book this job”; **My bookings** lists your bookings as worker or client (confirm, complete, cancel). Poster email is shown when you open a job detail. All API calls require a valid JWT (sent automatically after login).
 
 ## Build
 

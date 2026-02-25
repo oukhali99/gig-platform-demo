@@ -86,15 +86,22 @@ async function handleMe(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyR
   return json(200, { sub, email });
 }
 
+/** GET /users/:id - get a user's information by their ID (sub). Requires JWT. */
+async function handleGetUser(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
+  const claims = getClaims(event);
+  if (!claims) return json(401, { code: 'UNAUTHORIZED', message: 'Missing or invalid token' });
+  const id = event.pathParameters?.id;
+  if (!id) return json(400, { errors: [{ field: 'id', message: 'User ID required' }] });
+  const user = await cognito.getUserBySub(id);
+  if (!user) return json(404, { code: 'NOT_FOUND', message: 'User not found' });
+  return json(200, { sub: user.sub, email: user.email });
+}
+
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   const method = event.requestContext?.http?.method ?? 'GET';
   const path = event.rawPath ?? '';
 
-  devLog('identity request', {
-    method,
-    path,
-    requestId: event.requestContext?.requestId,
-  });
+  devLog('identity request', { method, path, requestId: event.requestContext?.requestId });
 
   try {
     let response: APIGatewayProxyResultV2;
@@ -102,7 +109,11 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     else if (method === 'POST' && path === '/auth/login') response = await handleLogin(event);
     else if (method === 'POST' && path === '/auth/refresh') response = await handleRefresh(event);
     else if (method === 'GET' && path === '/auth/me') response = await handleMe(event);
-    else response = json(404, { code: 'NOT_FOUND', message: 'Route not found' });
+    else if (method === 'GET' && path.startsWith('/users/')) {
+      const id = event.pathParameters?.id ?? (path.replace(/^\/users\/?/, '').split('/')[0] || undefined);
+      if (!id) response = json(400, { errors: [{ field: 'id', message: 'User ID required' }] });
+      else response = await handleGetUser({ ...event, pathParameters: { ...event.pathParameters, id } });
+    } else response = json(404, { code: 'NOT_FOUND', message: 'Route not found' });
 
     devLog('identity response', { method, path, statusCode: (response as { statusCode?: number }).statusCode });
     return response;

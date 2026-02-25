@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { devLog } from '@gig-platform/common';
 import * as repo from './repository.js';
 import * as events from './events.js';
+import { getJobForBooking } from '@gig-platform/common';
 import type { CreateBookingInput, BookingStatus } from './types.js';
 
 const corsHeaders = {
@@ -75,7 +76,9 @@ async function handleCreateBooking(event: APIGatewayProxyEventV2): Promise<APIGa
   const validated = validateCreate(body);
   if (!validated.ok) return badRequest(validated.errors);
 
-  const job = await repo.getJobForBooking(validated.data.jobId);
+  const authHeader = event.headers?.authorization ?? event.headers?.Authorization;
+  const jobsApiUrl = process.env.JOBS_API_URL ?? '';
+  const job = await getJobForBooking(jobsApiUrl, validated.data.jobId, authHeader);
   if (!job) return notFound('Job not found');
   if (job.status !== 'published') {
     return json(409, { code: 'CONFLICT', message: 'Job is not published' });

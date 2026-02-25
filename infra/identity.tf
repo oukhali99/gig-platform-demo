@@ -80,7 +80,8 @@ resource "aws_iam_role_policy" "identity_lambda_cognito" {
         Action = [
           "cognito-idp:SignUp",
           "cognito-idp:AdminConfirmSignUp",
-          "cognito-idp:InitiateAuth"
+          "cognito-idp:InitiateAuth",
+          "cognito-idp:ListUsers"
         ]
         Resource = [aws_cognito_user_pool.main.arn]
       }
@@ -147,6 +148,14 @@ resource "aws_apigatewayv2_route" "auth_refresh" {
 resource "aws_apigatewayv2_route" "auth_me" {
   api_id             = aws_apigatewayv2_api.jobs.id
   route_key          = "GET /auth/me"
+  target             = "integrations/${aws_apigatewayv2_integration.identity.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "users_get" {
+  api_id             = aws_apigatewayv2_api.jobs.id
+  route_key          = "GET /users/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.identity.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id

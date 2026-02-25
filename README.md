@@ -18,11 +18,11 @@ A **serverless**, **event-driven** gig marketplace: clients post small jobs (e.g
 
 | Service | Use |
 |--------|-----|
-| **API Gateway** (HTTP API) | Single API surface for auth and jobs; JWT authorizer (Cognito). |
-| **Lambda** | Identity (register, login, refresh, me) and Jobs (CRUD, publish). |
-| **Cognito** (User Pools) | User identity, email sign-in, JWT tokens, custom role (client/worker). |
-| **DynamoDB** | Jobs table (per-service DB; no shared database). |
-| **EventBridge** | Domain event bus (e.g. job.created, job.published) for async integration. |
+| **API Gateway** (HTTP API) | Single API surface for auth, jobs, and bookings; JWT authorizer (Cognito). |
+| **Lambda** | Identity (register, login, refresh, me, get user by id), Jobs (CRUD, publish), Bookings (create, confirm, complete, cancel). |
+| **Cognito** (User Pools) | User identity, email sign-in, JWT tokens. |
+| **DynamoDB** | Jobs table and Bookings table (per-service; no shared database). |
+| **EventBridge** | Domain event bus (e.g. job.created, job.published, booking.created) for async integration. |
 | **IAM** | Least-privilege roles per Lambda (Cognito, DynamoDB, EventBridge). |
 | **CloudWatch** | Logs and metrics for Lambdas and API Gateway. |
 
@@ -32,10 +32,10 @@ Infrastructure is defined in **Terraform** (single codebase, no manual console w
 
 ## Architecture at a glance
 
-- **Microservices**: Identity and Jobs are separate deployable units with their own Lambda and data (Cognito + DynamoDB for jobs). More services (Workers, Bookings, Payments, Notifications) are designed in docs and can be added the same way.
+- **Microservices**: Identity, Jobs, and Bookings are implemented as separate deployable units with their own Lambda and data (Cognito for identity; DynamoDB for jobs and bookings). Payments and Notifications are designed in docs and can be added the same way.
 - **Contract-first**: API and event contracts are documented before implementation ([docs/04-api-contracts.md](docs/04-api-contracts.md), [docs/05-event-contracts.md](docs/05-event-contracts.md)).
 - **Per-service data**: Each service owns its store; cross-service data only via APIs or events (no shared DB).
-- **Event-driven integration**: Jobs service publishes events to EventBridge; future consumers (e.g. notifications, analytics) subscribe without changing the producer.
+- **Event-driven integration**: Jobs and Bookings publish events to EventBridge; consumers (e.g. notifications, analytics) can subscribe without changing producers.
 
 See [docs/02-architecture-overview.md](docs/02-architecture-overview.md) and [docs/03-service-catalog.md](docs/03-service-catalog.md) for details and diagrams.
 
@@ -45,14 +45,24 @@ See [docs/02-architecture-overview.md](docs/02-architecture-overview.md) and [do
 
 ```
 ├── app/
-│   ├── frontend/          # React SPA (Vite) — login, register, list/create/publish jobs
+│   ├── frontend/          # React SPA (Vite) — login, register, jobs, bookings
 │   └── services/
+│       ├── identity/      # Identity Lambda — register, login, refresh, me, GET /users/:id (Cognito)
 │       ├── jobs/          # Jobs Lambda + DynamoDB; publishes to EventBridge
-│       └── identity/      # Identity Lambda — register, login, refresh, me (Cognito)
+│       └── bookings/      # Bookings Lambda + DynamoDB; create/confirm/complete/cancel
 ├── docs/                  # Product, architecture, API/event contracts, ADRs
 ├── infra/                 # Terraform — Cognito, Lambdas, API Gateway, DynamoDB
 └── package.json           # Yarn workspaces; deploy script
 ```
+
+---
+
+## Where to look
+
+- **Auth & user lookup**: `app/services/identity/src/index.ts`, `cognito.ts`
+- **Jobs CRUD & publish**: `app/services/jobs/src/index.ts`, `repository.ts`
+- **Bookings flow**: `app/services/bookings/src/index.ts`, [docs/04-api-contracts.md](docs/04-api-contracts.md) (Bookings + Idempotency)
+- **API contracts**: [docs/04-api-contracts.md](docs/04-api-contracts.md), [docs/05-event-contracts.md](docs/05-event-contracts.md)
 
 ---
 
@@ -83,7 +93,7 @@ yarn destroy
 - [docs/README.md](docs/README.md) — Index and glossary
 - [docs/01-product-and-domain.md](docs/01-product-and-domain.md) — Problem, personas, flows, bounded contexts
 - [docs/02-architecture-overview.md](docs/02-architecture-overview.md) — High-level design and AWS services
-- [docs/04-api-contracts.md](docs/04-api-contracts.md) — Auth and jobs API
+- [docs/04-api-contracts.md](docs/04-api-contracts.md) — Auth, jobs, and bookings API
 - [docs/05-event-contracts.md](docs/05-event-contracts.md) — Domain events
 - [docs/adr/](docs/adr/) — Architecture decision records (microservices, EventBridge, Cognito, per-service DBs)
 

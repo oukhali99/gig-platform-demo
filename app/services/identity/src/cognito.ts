@@ -4,11 +4,30 @@ import {
   AdminConfirmSignUpCommand,
   InitiateAuthCommand,
   AuthFlowType,
+  ListUsersCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 const client = new CognitoIdentityProviderClient({});
 const USER_POOL_ID = process.env.USER_POOL_ID!;
 const CLIENT_ID = process.env.CLIENT_ID!;
+
+/** Get user info by sub (Cognito user id). Uses ListUsers with filter. */
+export async function getUserBySub(sub: string): Promise<{ sub: string; email: string } | null> {
+  const result = await client.send(
+    new ListUsersCommand({
+      UserPoolId: USER_POOL_ID,
+      Filter: `sub = "${sub}"`,
+      Limit: 1,
+    })
+  );
+  const user = result.Users?.[0];
+  if (!user) return null;
+  const subAttr = user.Attributes?.find((a) => a.Name === 'sub');
+  const emailAttr = user.Attributes?.find((a) => a.Name === 'email');
+  const email = emailAttr?.Value ?? (user.Username as string) ?? '';
+  const userId = subAttr?.Value ?? sub;
+  return userId && email ? { sub: userId, email } : null;
+}
 
 export async function register(email: string, password: string): Promise<{ sub: string }> {
   const { UserSub } = await client.send(

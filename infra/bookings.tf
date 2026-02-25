@@ -92,11 +92,6 @@ resource "aws_iam_role_policy" "bookings_lambda_dynamodb" {
           aws_dynamodb_table.bookings.arn,
           "${aws_dynamodb_table.bookings.arn}/index/*"
         ]
-      },
-      {
-        Effect   = "Allow"
-        Action   = "dynamodb:GetItem"
-        Resource = [aws_dynamodb_table.jobs.arn]
       }
     ]
   })
@@ -140,10 +135,10 @@ resource "aws_lambda_function" "bookings" {
 
   environment {
     variables = {
-      TABLE_NAME       = aws_dynamodb_table.bookings.name
-      JOBS_TABLE_NAME  = aws_dynamodb_table.jobs.name
-      EVENT_BUS_NAME   = "default"
-      ENVIRONMENT      = var.environment
+      TABLE_NAME      = aws_dynamodb_table.bookings.name
+      JOBS_API_URL    = aws_apigatewayv2_stage.jobs.invoke_url
+      EVENT_BUS_NAME  = "default"
+      ENVIRONMENT     = var.environment
     }
   }
 }

@@ -56,6 +56,11 @@ export async function authMe(): Promise<AuthUser> {
   return request<AuthUser>('/auth/me');
 }
 
+/** Get user by sub (identity/Cognito). Returns { sub, email }. Requires JWT. */
+export async function getUser(sub: string): Promise<{ sub: string; email: string }> {
+  return request<{ sub: string; email: string }>(`/users/${encodeURIComponent(sub)}`);
+}
+
 // --- Jobs ---
 export interface Job {
   jobId: string;

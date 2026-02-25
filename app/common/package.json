@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist/logger.js",
+  "main": "dist/index.js",
   "exports": {
-    ".": "./dist/logger.js"
+    ".": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc"

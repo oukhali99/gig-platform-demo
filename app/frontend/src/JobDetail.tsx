@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getJob, publishJob, deleteJob, createBooking, listBookings, type Job, type Booking } from './api';
+import { getJob, getUser, publishJob, deleteJob, createBooking, listBookings, type Job, type Booking } from './api';
 
 export default function JobDetail() {
   const { auth, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null);
+  const [posterEmail, setPosterEmail] = useState<string | null>(null);
   const [myBooking, setMyBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +24,13 @@ export default function JobDetail() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [auth, id]);
+
+  useEffect(() => {
+    if (!job?.clientId) return;
+    getUser(job.clientId)
+      .then((u) => setPosterEmail(u.email))
+      .catch(() => setPosterEmail(null));
+  }, [job?.clientId]);
 
   useEffect(() => {
     if (!auth?.user?.sub || !id || !job || job.status !== 'published') return;
@@ -83,6 +91,11 @@ export default function JobDetail() {
       <div className="card">
         <span className={`badge ${job.status}`}>{job.status}</span>
         <h1 style={{ marginTop: '0.5rem' }}>{job.title}</h1>
+        {posterEmail && (
+          <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
+            Posted by {posterEmail}
+          </p>
+        )}
         <p><strong>Location:</strong> {job.location}</p>
         <p><strong>Budget:</strong> ${job.budget}</p>
         <p><strong>Scheduled:</strong> {job.scheduledAt.slice(0, 16).replace('T', ' ')}</p>

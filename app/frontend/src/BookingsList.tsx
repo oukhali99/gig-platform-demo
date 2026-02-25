@@ -35,14 +35,15 @@ export default function BookingsList() {
         clientBookings.forEach((b) => {
           if (b.clientId === sub) byId.set(b.bookingId, b);
         });
-        setBookings(Array.from(byId.values()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
-        const jobIds = [...new Set(byId.values().map((b) => b.jobId))];
-        return Promise.all(jobIds.map((id) => getJob(id).then((job) => [id, job] as const)));
+        const list = Array.from(byId.values()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+        setBookings(list);
+        const jobIds = [...new Set(list.map((b) => b.jobId))];
+        return Promise.all(jobIds.map((id: string) => getJob(id).then((job: Job) => [id, job] as const)));
       })
-      .then((pairs) => {
-        const map: Record<string, Job> = {};
-        pairs.forEach(([id, job]) => { map[id] = job; });
-        setJobs(map);
+      .then((jobPairs) => {
+        const jobMap: Record<string, Job> = {};
+        (jobPairs as [string, Job][]).forEach(([id, job]) => { jobMap[id] = job; });
+        setJobs(jobMap);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));

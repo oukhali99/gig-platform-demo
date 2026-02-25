@@ -7,25 +7,10 @@ import {
   type QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import type { Booking, CreateBookingInput, BookingStatus, ListBookingsQuery, ListBookingsResult } from './types.js';
+import type { Booking, BookingStatus, ListBookingsQuery, ListBookingsResult } from './types.js';
 
 const TABLE_NAME = process.env.TABLE_NAME!;
-const JOBS_TABLE_NAME = process.env.JOBS_TABLE_NAME!;
 const client = new DynamoDBClient({});
-
-export async function getJobForBooking(jobId: string): Promise<{ clientId: string; status: string } | null> {
-  const result = await client.send(
-    new GetItemCommand({
-      TableName: JOBS_TABLE_NAME,
-      Key: marshall({ jobId }),
-      ProjectionExpression: 'clientId, #status',
-      ExpressionAttributeNames: { '#status': 'status' },
-    })
-  );
-  if (!result.Item) return null;
-  const item = unmarshall(result.Item) as { clientId: string; status: string };
-  return item.clientId && item.status ? { clientId: item.clientId, status: item.status } : null;
-}
 
 /** Find existing booking by idempotency key (GSI). */
 export async function getBookingByIdempotencyKey(idempotencyKey: string): Promise<Booking | null> {

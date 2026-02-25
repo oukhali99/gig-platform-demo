@@ -21,6 +21,7 @@ APIs are exposed via API Gateway. Full OpenAPI/Smithy specs can be added later i
 | POST   | /auth/login    | Login; returns tokens. |
 | POST   | /auth/refresh  | Refresh access token. |
 | GET    | /auth/me       | Current user (sub, email). |
+| GET    | /users/:id     | Get user by id (Cognito sub); returns sub, email. Requires JWT. |
 
 ### Jobs
 
