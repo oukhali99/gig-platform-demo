@@ -1,53 +1,12 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { randomUUID } from 'crypto';
-import { devLog } from '@gig-platform/common';
+import { devLog, json, badRequest, notFound, getCorrelationId, getIdempotencyKey, getSubFromEvent, parseBody, getJobForBooking } from '@gig-platform/common';
 import * as repo from './repository.js';
 import * as events from './events.js';
-import { getJobForBooking } from '@gig-platform/common';
 import type { CreateBookingInput, BookingStatus } from './types.js';
-
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-};
-
-function json(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
-  return { statusCode, headers: corsHeaders, body: JSON.stringify(body) };
-}
-
-function badRequest(errors: { field: string; message: string }[]): APIGatewayProxyResultV2 {
-  return json(400, { errors });
-}
-
-function notFound(message: string): APIGatewayProxyResultV2 {
-  return json(404, { code: 'NOT_FOUND', message });
-}
-
-function getCorrelationId(event: APIGatewayProxyEventV2): string {
-  return event.headers['x-correlation-id'] ?? event.requestContext?.requestId ?? randomUUID();
-}
-
-function getIdempotencyKey(event: APIGatewayProxyEventV2): string | null {
-  const key = event.headers['idempotency-key'] ?? event.headers['Idempotency-Key'];
-  return typeof key === 'string' && key.trim() ? key.trim() : null;
-}
 
 function getBookingIdFromPath(event: APIGatewayProxyEventV2): string | null {
   return event.pathParameters?.id ?? null;
-}
-
-function getSubFromEvent(event: APIGatewayProxyEventV2): string | null {
-  const ctx = event.requestContext as { authorizer?: { jwt?: { claims?: Record<string, string> } } };
-  return ctx?.authorizer?.jwt?.claims?.sub ?? null;
-}
-
-function parseBody<T>(event: APIGatewayProxyEventV2): T | null {
-  if (!event.body) return null;
-  try {
-    return JSON.parse(event.body) as T;
-  } catch {
-    return null;
-  }
 }
 
 function validateCreate(body: unknown): { ok: true; data: CreateBookingInput } | { ok: false; errors: { field: string; message: string }[] } {

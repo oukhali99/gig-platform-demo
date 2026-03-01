@@ -1,40 +1,14 @@
-import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
-import { randomUUID } from 'crypto';
+import { createEventEnvelope, putEvent } from '@gig-platform/common';
 import type { Booking } from './types.js';
 
 const eventBusName = process.env.EVENT_BUS_NAME ?? 'default';
-const client = new EventBridgeClient({});
 const PRODUCER = 'bookings-service';
 const EVENT_VERSION = '1.0';
 
-interface EventEnvelope {
-  eventId: string;
-  eventType: string;
-  eventVersion: string;
-  correlationId: string;
-  timestamp: string;
-  producer: string;
-  payload: Record<string, unknown>;
-}
-
-function envelope(
-  eventType: string,
-  payload: Record<string, unknown>,
-  correlationId: string
-): EventEnvelope {
-  return {
-    eventId: randomUUID(),
-    eventType,
-    eventVersion: EVENT_VERSION,
-    correlationId,
-    timestamp: new Date().toISOString(),
-    producer: PRODUCER,
-    payload,
-  };
-}
-
 export async function publishBookingCreated(booking: Booking, correlationId: string): Promise<void> {
-  const detail = envelope(
+  const detail = createEventEnvelope(
+    PRODUCER,
+    EVENT_VERSION,
     'booking.created',
     {
       bookingId: booking.bookingId,
@@ -45,22 +19,13 @@ export async function publishBookingCreated(booking: Booking, correlationId: str
     },
     correlationId
   );
-  await client.send(
-    new PutEventsCommand({
-      Entries: [
-        {
-          Source: PRODUCER,
-          DetailType: 'booking.created',
-          Detail: JSON.stringify(detail),
-          EventBusName: eventBusName === 'default' ? undefined : eventBusName,
-        },
-      ],
-    })
-  );
+  await putEvent(eventBusName, PRODUCER, 'booking.created', detail);
 }
 
 export async function publishBookingConfirmed(booking: Booking, correlationId: string): Promise<void> {
-  const detail = envelope(
+  const detail = createEventEnvelope(
+    PRODUCER,
+    EVENT_VERSION,
     'booking.confirmed',
     {
       bookingId: booking.bookingId,
@@ -71,22 +36,13 @@ export async function publishBookingConfirmed(booking: Booking, correlationId: s
     },
     correlationId
   );
-  await client.send(
-    new PutEventsCommand({
-      Entries: [
-        {
-          Source: PRODUCER,
-          DetailType: 'booking.confirmed',
-          Detail: JSON.stringify(detail),
-          EventBusName: eventBusName === 'default' ? undefined : eventBusName,
-        },
-      ],
-    })
-  );
+  await putEvent(eventBusName, PRODUCER, 'booking.confirmed', detail);
 }
 
 export async function publishBookingCompleted(booking: Booking, correlationId: string): Promise<void> {
-  const detail = envelope(
+  const detail = createEventEnvelope(
+    PRODUCER,
+    EVENT_VERSION,
     'booking.completed',
     {
       bookingId: booking.bookingId,
@@ -97,18 +53,7 @@ export async function publishBookingCompleted(booking: Booking, correlationId: s
     },
     correlationId
   );
-  await client.send(
-    new PutEventsCommand({
-      Entries: [
-        {
-          Source: PRODUCER,
-          DetailType: 'booking.completed',
-          Detail: JSON.stringify(detail),
-          EventBusName: eventBusName === 'default' ? undefined : eventBusName,
-        },
-      ],
-    })
-  );
+  await putEvent(eventBusName, PRODUCER, 'booking.completed', detail);
 }
 
 export async function publishBookingCancelled(
@@ -119,17 +64,6 @@ export async function publishBookingCancelled(
 ): Promise<void> {
   const payload: Record<string, unknown> = { bookingId, jobId };
   if (reason !== undefined) payload.reason = reason;
-  const detail = envelope('booking.cancelled', payload, correlationId);
-  await client.send(
-    new PutEventsCommand({
-      Entries: [
-        {
-          Source: PRODUCER,
-          DetailType: 'booking.cancelled',
-          Detail: JSON.stringify(detail),
-          EventBusName: eventBusName === 'default' ? undefined : eventBusName,
-        },
-      ],
-    })
-  );
+  const detail = createEventEnvelope(PRODUCER, EVENT_VERSION, 'booking.cancelled', payload, correlationId);
+  await putEvent(eventBusName, PRODUCER, 'booking.cancelled', detail);
 }

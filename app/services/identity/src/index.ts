@@ -1,29 +1,6 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
-import { devLog } from '@gig-platform/common';
+import { devLog, json, parseBody, getClaims } from '@gig-platform/common';
 import * as cognito from './cognito.js';
-
-const corsHeaders = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-};
-
-function json(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
-  return { statusCode, headers: corsHeaders, body: JSON.stringify(body) };
-}
-
-function parseBody<T>(event: APIGatewayProxyEventV2): T | null {
-  if (!event.body) return null;
-  try {
-    return JSON.parse(event.body) as T;
-  } catch {
-    return null;
-  }
-}
-
-function getClaims(event: APIGatewayProxyEventV2): Record<string, unknown> | null {
-  const ctx = event.requestContext as { authorizer?: { jwt?: { claims?: Record<string, unknown> } } };
-  return ctx?.authorizer?.jwt?.claims ?? null;
-}
 
 async function handleRegister(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   const body = parseBody<{ email?: string; password?: string }>(event);
