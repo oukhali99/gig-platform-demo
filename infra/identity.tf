@@ -120,7 +120,7 @@ resource "aws_lambda_function" "identity" {
 
 # API Gateway - identity integration and auth routes
 resource "aws_apigatewayv2_integration" "identity" {
-  api_id                 = aws_apigatewayv2_api.jobs.id
+  api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "AWS_PROXY"
   integration_uri         = aws_lambda_function.identity.invoke_arn
   integration_method     = "POST"
@@ -128,25 +128,25 @@ resource "aws_apigatewayv2_integration" "identity" {
 }
 
 resource "aws_apigatewayv2_route" "auth_register" {
-  api_id    = aws_apigatewayv2_api.jobs.id
+  api_id    = aws_apigatewayv2_api.api.id
   route_key = "POST /auth/register"
   target    = "integrations/${aws_apigatewayv2_integration.identity.id}"
 }
 
 resource "aws_apigatewayv2_route" "auth_login" {
-  api_id    = aws_apigatewayv2_api.jobs.id
+  api_id    = aws_apigatewayv2_api.api.id
   route_key = "POST /auth/login"
   target    = "integrations/${aws_apigatewayv2_integration.identity.id}"
 }
 
 resource "aws_apigatewayv2_route" "auth_refresh" {
-  api_id    = aws_apigatewayv2_api.jobs.id
+  api_id    = aws_apigatewayv2_api.api.id
   route_key = "POST /auth/refresh"
   target    = "integrations/${aws_apigatewayv2_integration.identity.id}"
 }
 
 resource "aws_apigatewayv2_route" "auth_me" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /auth/me"
   target             = "integrations/${aws_apigatewayv2_integration.identity.id}"
   authorization_type = "JWT"
@@ -154,7 +154,7 @@ resource "aws_apigatewayv2_route" "auth_me" {
 }
 
 resource "aws_apigatewayv2_route" "users_get" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /users/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.identity.id}"
   authorization_type = "JWT"
@@ -166,5 +166,5 @@ resource "aws_lambda_permission" "identity_apigw" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.identity.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.jobs.execution_arn}/*/*"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }

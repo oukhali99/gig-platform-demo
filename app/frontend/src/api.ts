@@ -1,4 +1,4 @@
-const BASE = (import.meta.env.VITE_JOBS_API_URL as string)?.replace(/\/$/, '') ?? '';
+const BASE = (import.meta.env.VITE_API_URL as string)?.replace(/\/$/, '') ?? '';
 
 let authToken: string | null = null;
 

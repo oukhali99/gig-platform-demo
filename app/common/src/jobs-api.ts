@@ -12,16 +12,16 @@ export interface JobForBooking {
  * Fetch job by id from the jobs API using the caller's JWT.
  * Returns null if job not found or on non-2xx; returns { clientId, status } on 200.
  *
- * @param jobsApiUrl - Base URL of the API (e.g. from JOBS_API_URL env in the caller).
+ * @param apiUrl - Base URL of the API (e.g. from API_URL env in the caller).
  * @param jobId - Job UUID.
  * @param authorizationHeader - Authorization header value (Bearer token) from the incoming request.
  */
 export async function getJobForBooking(
-  jobsApiUrl: string,
+  apiUrl: string,
   jobId: string,
   authorizationHeader: string | undefined
 ): Promise<JobForBooking | null> {
-  const base = (jobsApiUrl ?? '').replace(/\/$/, '');
+  const base = (apiUrl ?? '').replace(/\/$/, '');
   if (!base) return null;
   if (!authorizationHeader?.trim()) return null;
   const url = `${base}/jobs/${encodeURIComponent(jobId)}`;

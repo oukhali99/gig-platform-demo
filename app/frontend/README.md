@@ -7,7 +7,7 @@ React app for the gig platform: register/login (Cognito via identity API), list 
 ```bash
 yarn install
 cp .env.example .env
-# Edit .env: set VITE_JOBS_API_URL to your API base URL (from `terraform output api_url`).
+# Edit .env: set VITE_API_URL to your API base URL (from `terraform output api_url`).
 ```
 
 ## Run
@@ -24,4 +24,4 @@ Open http://localhost:5173. Register or log in; then list jobs, post a job (draf
 yarn build
 ```
 
-Output in `dist/`. Serve with any static host; ensure `VITE_JOBS_API_URL` is set at build time so the app can call the API.
+Output in `dist/`. Serve with any static host; ensure `VITE_API_URL` is set at build time so the app can call the API.

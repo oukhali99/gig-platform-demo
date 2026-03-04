@@ -1,6 +1,6 @@
 output "api_url" {
   description = "API base URL (jobs + auth)"
-  value       = aws_apigatewayv2_stage.jobs.invoke_url
+  value       = aws_apigatewayv2_stage.api.invoke_url
 }
 
 output "jobs_table_name" {

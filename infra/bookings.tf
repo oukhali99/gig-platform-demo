@@ -136,7 +136,7 @@ resource "aws_lambda_function" "bookings" {
   environment {
     variables = {
       TABLE_NAME      = aws_dynamodb_table.bookings.name
-      JOBS_API_URL    = aws_apigatewayv2_stage.jobs.invoke_url
+      API_URL         = aws_apigatewayv2_stage.api.invoke_url
       EVENT_BUS_NAME  = "default"
       ENVIRONMENT     = var.environment
     }
@@ -144,7 +144,7 @@ resource "aws_lambda_function" "bookings" {
 }
 
 resource "aws_apigatewayv2_integration" "bookings" {
-  api_id                 = aws_apigatewayv2_api.jobs.id
+  api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.bookings.invoke_arn
   integration_method     = "POST"
@@ -152,7 +152,7 @@ resource "aws_apigatewayv2_integration" "bookings" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_create" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /bookings"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -160,7 +160,7 @@ resource "aws_apigatewayv2_route" "bookings_create" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_list" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /bookings"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -168,7 +168,7 @@ resource "aws_apigatewayv2_route" "bookings_list" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_get" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /bookings/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -176,7 +176,7 @@ resource "aws_apigatewayv2_route" "bookings_get" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_confirm" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /bookings/{id}/confirm"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -184,7 +184,7 @@ resource "aws_apigatewayv2_route" "bookings_confirm" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_complete" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /bookings/{id}/complete"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -192,7 +192,7 @@ resource "aws_apigatewayv2_route" "bookings_complete" {
 }
 
 resource "aws_apigatewayv2_route" "bookings_cancel" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /bookings/{id}/cancel"
   target             = "integrations/${aws_apigatewayv2_integration.bookings.id}"
   authorization_type = "JWT"
@@ -204,5 +204,5 @@ resource "aws_lambda_permission" "bookings_apigw" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.bookings.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.jobs.execution_arn}/*/*"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }

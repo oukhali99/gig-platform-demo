@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # API Gateway - shared HTTP API, JWT authorizer, stage
 # ---------------------------------------------------------------------------
-resource "aws_apigatewayv2_api" "jobs" {
+resource "aws_apigatewayv2_api" "api" {
   name          = "${var.name_prefix}-api-${var.environment}"
   protocol_type = "HTTP"
 
@@ -15,7 +15,7 @@ resource "aws_apigatewayv2_api" "jobs" {
 data "aws_region" "current" {}
 
 resource "aws_apigatewayv2_authorizer" "cognito" {
-  api_id           = aws_apigatewayv2_api.jobs.id
+  api_id           = aws_apigatewayv2_api.api.id
   authorizer_type  = "JWT"
   identity_sources = ["$request.header.Authorization"]
   name             = "cognito-authorizer"
@@ -26,8 +26,8 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   }
 }
 
-resource "aws_apigatewayv2_stage" "jobs" {
-  api_id      = aws_apigatewayv2_api.jobs.id
+resource "aws_apigatewayv2_stage" "api" {
+  api_id      = aws_apigatewayv2_api.api.id
   name        = "$default"
   auto_deploy = true
 }

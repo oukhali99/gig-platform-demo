@@ -130,7 +130,7 @@ resource "aws_lambda_function" "jobs" {
 
 # API Gateway - jobs integration and routes
 resource "aws_apigatewayv2_integration" "jobs" {
-  api_id                 = aws_apigatewayv2_api.jobs.id
+  api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "AWS_PROXY"
   integration_uri         = aws_lambda_function.jobs.invoke_arn
   integration_method     = "POST"
@@ -138,7 +138,7 @@ resource "aws_apigatewayv2_integration" "jobs" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_list" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /jobs"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -146,7 +146,7 @@ resource "aws_apigatewayv2_route" "jobs_list" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_create" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /jobs"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -154,7 +154,7 @@ resource "aws_apigatewayv2_route" "jobs_create" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_get" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /jobs/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -162,7 +162,7 @@ resource "aws_apigatewayv2_route" "jobs_get" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_update" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "PUT /jobs/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -170,7 +170,7 @@ resource "aws_apigatewayv2_route" "jobs_update" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_publish" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "POST /jobs/{id}/publish"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -178,7 +178,7 @@ resource "aws_apigatewayv2_route" "jobs_publish" {
 }
 
 resource "aws_apigatewayv2_route" "jobs_delete" {
-  api_id             = aws_apigatewayv2_api.jobs.id
+  api_id             = aws_apigatewayv2_api.api.id
   route_key          = "DELETE /jobs/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.jobs.id}"
   authorization_type = "JWT"
@@ -190,5 +190,5 @@ resource "aws_lambda_permission" "jobs_apigw" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.jobs.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.jobs.execution_arn}/*/*"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
